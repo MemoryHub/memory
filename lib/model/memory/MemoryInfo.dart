@@ -9,7 +9,7 @@ class MemoryInfo {
     return MemoryInfo(
       json['url'] as String,
       json['title'] as String,
-      json['author'] as String,
+      json['author'] as String
     );
   }
 
