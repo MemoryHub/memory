@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:memory/components/background/anim/FadeOutCard.dart';
 import 'package:memory/components/button/home_button.dart';
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
 
   // 外部函数定义
   void MineOnTap() {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
+    Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => LoginPage(),
     ));
   }
