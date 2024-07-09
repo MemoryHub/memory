@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:memory/components/background/anim/FadeOutCard.dart';
 import 'package:memory/components/button/home_button.dart';
 import 'package:memory/model/memory/MemoryInfo.dart';
@@ -7,6 +7,7 @@ import 'package:memory/model/meta/Meta.dart';
 import 'package:memory/pages/login/login_page.dart';
 import 'package:memory/utils/api_config.dart';
 import 'package:memory/utils/http_util.dart';
+import 'package:memory/utils/preference_util.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,8 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool isMemory = true; // 相册类型切换 true:memory相册 false:个人相册
+  List<Widget> _buttons = []; // 底部按钮
+
   List<MemoryInfo> imgList = [
     MemoryInfo(
         'https://rmrbcmsonline.peopleapp.com/upload/zw/bjh_image/1562928602_f210de46edb5c4ace6799a105b6cbf22.jpeg',
@@ -45,9 +47,48 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _checkToken();
   }
 
-  initData() async {
+  // 查看登录状态
+  _checkToken() async {
+    bool isLogin = false;
+    String accessToken = await PreferenceHelper.getAccessToken();
+    if (accessToken.isNotEmpty) {
+      isLogin = true;
+    } else {
+      isLogin = false;
+    }
+    // 未登录时显示Me按钮，登录后显示Memory和Photo
+    setButton(isLogin);
+   
+  }
+
+  // 设置底部按钮状态
+  setButton(isLogin){
+ if (!isLogin) {
+      _buttons.add(
+        HomeButton(
+            text: 'Me', imgUrl: 'assets/images/mine.png', onTap: MeOnTap),
+      );
+    } else {
+      _buttons.add(HomeButton(
+        text: 'Memory',
+        imgUrl: 'assets/images/mine.png', // 使用不同的图片资源
+        onTap: PhotoOnTap,
+      ));
+      _buttons.add(SizedBox(width: 80.w)); // 添加间距
+      _buttons.add(HomeButton(
+        text: 'Photo',
+        imgUrl: 'assets/images/mine.png', // 使用不同的图片资源
+        onTap: PhotoOnTap,
+      ));
+    }
+    setState(() {});
+  }
+
+ // 获取个人相册
+  initPhotoData() async {
     // 获取后台图片数据
     Map<String, Object> _param = {
       "page": 1,
@@ -55,10 +96,11 @@ class _HomePageState extends State<HomePage> {
     };
     HttpUtil http = new HttpUtil(APIConfig.SEARCH_METADATA, _param);
     dynamic map = await http.getResponseMap(HttpType.POST);
-    await setData(http, map);
+    await setPhotoData(http, map);
   }
 
-  setData(HttpUtil http, map) {
+  // 个人相册设置数据
+  setPhotoData(HttpUtil http, map) {
     // 确保 'assets' 和 'items' 存在
     if (map.containsKey('assets') && map['assets'].containsKey('items')) {
       List<dynamic> jsonList = map['assets']['items'];
@@ -67,11 +109,11 @@ class _HomePageState extends State<HomePage> {
           .toList();
       // 获取 'items' 集合
       if (dataList.isNotEmpty && dataList.length > 0) {
-        // 遍历 meta 
+        // 遍历 meta
         dataList.forEach((meta) async {
           personalList.add(meta);
         });
-        print('metaList:----------' +  personalList.toString());
+        print('metaList:----------' + personalList.toString());
         setState(() {});
       }
     } else {
@@ -79,16 +121,17 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // 外部函数定义
-  void MineOnTap() {
+  // 登录按钮
+  void MeOnTap() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => LoginPage(),
     ));
   }
 
+ // 个人相册
   void PhotoOnTap() async {
     // 网络获取数据
-    await initData();
+    await initPhotoData();
     setState(() {
       isMemory = !isMemory;
     });
@@ -97,22 +140,15 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      FadeOutCard(key:ValueKey(isMemory),dataList: isMemory? imgList:personalList),
+      FadeOutCard(
+          key: ValueKey(isMemory), dataList: isMemory ? imgList : personalList),
       Positioned(
           bottom: 80,
-          left: 0,
-          right: 0,
-          child: Center(
-              child: Column(children: [
-            HomeButton(
-                text: 'mine',
-                imgUrl: 'assets/images/mine.png',
-                onTap: MineOnTap),
-            HomeButton(
-                text: 'photo',
-                imgUrl: 'assets/images/mine.png',
-                onTap: PhotoOnTap)
-          ]))),
+          child: SizedBox(
+              width: MediaQuery.sizeOf(context).width,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _buttons))),
     ]);
   }
 }

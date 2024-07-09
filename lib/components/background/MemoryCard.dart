@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:memory/model/memory/MemoryInfo.dart';
 import 'package:memory/model/meta/Meta.dart';
 import 'package:memory/utils/api_config.dart';
@@ -90,7 +91,7 @@ Widget titleText(String textMessage) {
     child: Text(
       textMessage, // 使用传入的textMessage
       style: TextStyle(
-        fontSize: 24.0,
+        fontSize: 44.sp,
         fontWeight: FontWeight.bold,
         color: Colors.white,
         fontFamily: 'Playwrite', // 确保字体名称正确，这里注释掉或替换为您的字体名称
@@ -114,7 +115,7 @@ Widget authorText(String textMessage) {
     child: Text(
       textMessage, // 使用传入的textMessage
       style: TextStyle(
-        fontSize: 14.0,
+        fontSize: 22.sp,
         color: Colors.white,
         fontFamily: 'Playwrite', // 确保字体名称正确，这里注释掉或替换为您的字体名称
         shadows: <Shadow>[
